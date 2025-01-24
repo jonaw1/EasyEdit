@@ -2,6 +2,7 @@ from easyeditor import BaseEditor
 from easyeditor import MEMITHyperParams
 from transformers import GPT2Tokenizer, GPT2LMHeadModel
 import torch
+import os
 from logger_config import setup_logger
 
 logger = setup_logger()
@@ -10,9 +11,26 @@ logger = setup_logger()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 logger.info(f"Using device: {device}")
 
+# Define the local directory for the model
+local_dir = "./hugging_cache/gpt2-xl"
+
+# Create the directory if it doesn't exist
+os.makedirs(local_dir, exist_ok=True)
+logger.info(f"Ensured directory exists: {local_dir}")
+
+# Download the model if it doesn't already exist
+if not os.listdir(local_dir):  # Check if the directory is empty
+    logger.info(f"Model not found at {local_dir}. Downloading...")
+    model = GPT2LMHeadModel.from_pretrained("gpt2-xl")
+    tokenizer = GPT2Tokenizer.from_pretrained("gpt2-xl")
+    model.save_pretrained(local_dir)
+    tokenizer.save_pretrained(local_dir)
+    logger.info(f"Model and tokenizer saved to {local_dir}")
+else:
+    logger.info(f"Model found at {local_dir}. Skipping download.")
+
 # Load hyperparameters
 hparams = MEMITHyperParams.from_hparams("./hparams/MEMIT/gpt2-xl.yaml")
-hparams.model_name = "gpt2-xl"
 
 # Define prompts and targets
 prompts = [
@@ -41,12 +59,12 @@ logger.info(f"Edit metrics: {metrics}")
 
 # Load the tokenizer and model
 logger.info("Loading the tokenizer and base model...")
-tokenizer = GPT2Tokenizer.from_pretrained("./hugging_cache/gpt2-xl")
+tokenizer = GPT2Tokenizer.from_pretrained(local_dir)
 tokenizer.pad_token_id = tokenizer.eos_token_id
 tokenizer.padding_side = "left"
 
 # Move the model to the selected device
-model = GPT2LMHeadModel.from_pretrained("./hugging_cache/gpt2-xl").to(device)
+model = GPT2LMHeadModel.from_pretrained(local_dir).to(device)
 
 # Define prompts for evaluation
 correct_prompts = [
