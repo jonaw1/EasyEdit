@@ -6,10 +6,10 @@
 #SBATCH --mem=80GB
 #SBATCH --gpus=1
 
-python3 -m venv .venv
+# python3 -m venv .venv
 source .venv/bin/activate
 
-pip install -r requirements.txt
+# pip install -r requirements.txt
 
 python3 my_edit.py
 
