@@ -3,7 +3,7 @@
 #SBATCH --time=01:00:00
 #SBATCH --output=example.out
 #SBATCH --error=error.out
-#SBATCH --mem=80GB
+#SBATCH --mem=256GB
 #SBATCH --gpus=1
 
 # python3 -m venv .venv
