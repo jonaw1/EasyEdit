@@ -13,4 +13,4 @@ pip install -r requirements.txt
 
 python3 my_edit.py
 
-conda deactivate
+deactivate
