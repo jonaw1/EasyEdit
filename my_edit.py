@@ -24,12 +24,13 @@ print(metrics)
 
 from transformers import GPT2Tokenizer
 from transformers import GPT2LMHeadModel
+import torch
 
 tokenizer = GPT2Tokenizer.from_pretrained("./hugging_cache/gpt2-xl")
 tokenizer.pad_token_id = tokenizer.eos_token_id
 tokenizer.padding_side = "left"
-device = 1
-model = GPT2LMHeadModel.from_pretrained("./hugging_cache/gpt2-xl").to(f"cuda:{device}")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = GPT2LMHeadModel.from_pretrained("./hugging_cache/gpt2-xl").to(device)
 
 correct_prompts = [
     "Ray Charles, the",
@@ -40,14 +41,14 @@ correct_prompts = [
 batch = tokenizer(correct_prompts, return_tensors="pt", padding=True)
 
 pre_edit_outputs = model.generate(
-    input_ids=batch["input_ids"].to(model.device),
-    attention_mask=batch["attention_mask"].to(model.device),
+    input_ids=batch["input_ids"].to(device),
+    attention_mask=batch["attention_mask"].to(device),
     max_new_tokens=15,
 )
 
 post_edit_outputs = edited_model.generate(
-    input_ids=batch["input_ids"].to(edited_model.device),
-    attention_mask=batch["attention_mask"].to(edited_model.device),
+    input_ids=batch["input_ids"].to(device),
+    attention_mask=batch["attention_mask"].to(device),
     max_new_tokens=15,
 )
 
