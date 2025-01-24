@@ -20,6 +20,7 @@ def test_KE():
     ground_truth = ['Ken Duncan', 'Mary Shelley', 'DC Universe']
     target_new = ['Wong Tung & Sons', 'Clairmont-Mayer', 'Image Universe']
     hparams = KEHyperParams.from_hparams('./hparams/KE/gpt2-xl')
+    hparams.model_name = "gpt2-xl"
     editor = BaseEditor.from_hparams(hparams)
     metrics, edited_model, _ = editor.batch_edit(
         prompts=prompts + prompts,
