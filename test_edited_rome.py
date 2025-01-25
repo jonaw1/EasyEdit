@@ -28,7 +28,7 @@ with open("used_case_ids.json", "r") as f:
     used_case_ids = json.load(f)
 
 used_case_ids_list = used_case_ids.keys()
-random_case_id = random.choice(list(used_case_ids_list))
+random_case_id = str(random.choice(list(used_case_ids_list)))
 logger.info(f"Using random case id: {random_case_id}")
 
 # Load the fact from the dataset
