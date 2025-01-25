@@ -10,7 +10,7 @@ import numpy as np
 
 logger = setup_logger()
 
-NUM_EDITS_PER_EXECUTION = 100
+NUM_EDITS_PER_EXECUTION = 1
 
 COUNTERFACT_URL = "https://rome.baulab.info/data/dsets/counterfact.json"
 DATA_DIR = "./data"
@@ -117,4 +117,4 @@ for i in range(NUM_EDITS_PER_EXECUTION):
 
 with open("used_case_ids.json", "w") as f:
     json.dump(used_case_ids, f)
-logger.info(f"Finished. There are now {len(used_case_ids).keys()} facts used")
+logger.info(f"Finished. There are now {len(used_case_ids.keys())} facts used")
