@@ -10,7 +10,7 @@ import numpy as np
 
 logger = setup_logger()
 
-NUM_EDITS_PER_EXECUTION = 50
+NUM_EDITS_PER_EXECUTION = 100
 
 COUNTERFACT_URL = "https://rome.baulab.info/data/dsets/counterfact.json"
 DATA_DIR = "./data"
@@ -82,7 +82,7 @@ counterfact_len = len(counterfact)
 os.makedirs(ROME_CACHE_DIR, exist_ok=True)
 logger.info(f"Ensured directory exists: {ROME_CACHE_DIR}")
 
-for _ in range(NUM_EDITS_PER_EXECUTION):
+for i in range(NUM_EDITS_PER_EXECUTION):
     # Find case id (fact) that has not been used for editing before
     random_case_id = random.randint(0, counterfact_len - 1)
     while used_case_ids.get(random_case_id) == True:
@@ -99,7 +99,7 @@ for _ in range(NUM_EDITS_PER_EXECUTION):
     gt = [cf["requested_rewrite"]["target_true"]["str"]]
     tn = [cf["requested_rewrite"]["target_new"]["str"]]
 
-    logger.info(f"Editing model for: {prompts[0]}... {gt[0]} -> {tn[0]}...")
+    logger.info(f"({i}/{NUM_EDITS_PER_EXECUTION}){" " if i < 10 else ""} Editing model for: {prompts[0]}... {gt[0]} -> {tn[0]}...")
     metrics, edited_model, _ = editor.edit(
         prompts=prompts,
         ground_truth=gt,
