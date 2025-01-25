@@ -14,7 +14,7 @@ def setup_logger():
 
     # Create a file handler for rotating logs
     file_handler = RotatingFileHandler(
-        "app.log", maxBytes=5*1024*1024, backupCount=3  # Rotate after 5MB, keep 3 backups
+        "app.log", maxBytes=100*500, backupCount=3  # Rotate after 100*500 bytes, keep 3 backups
     )
     file_handler.setFormatter(formatter)
 
