@@ -26,7 +26,7 @@ os.makedirs(DATA_DIR, exist_ok=True)
 logger.info(f"Ensured directory exists: {DATA_DIR}")
 
 # Download the dataset if it doesn't already exist
-if not os.path.exists(DATA_DIR):
+if not os.path.exists(COUNTERFACT_PATH):
     logger.info(f"Counterfact dataset not found at {COUNTERFACT_PATH}. Downloading...")
     response = requests.get(COUNTERFACT_URL)
     with open(COUNTERFACT_PATH, "wb") as f:

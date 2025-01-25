@@ -11,3 +11,4 @@ output
 scripts
 .venv
 app.log
+**/.DS_Store
