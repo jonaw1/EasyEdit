@@ -17,6 +17,8 @@ COUNTERFACT_PATH = "./data/counterfact.json"
 logger.info("Loading the base model and tokenizer...")
 model = GPT2LMHeadModel.from_pretrained(MODEL_PATH)
 tokenizer = GPT2Tokenizer.from_pretrained(MODEL_PATH)
+tokenizer.pad_token_id = tokenizer.eos_token_id
+tokenizer.padding_side = "left"
 
 # Move the model to the appropriate device (GPU or CPU)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
