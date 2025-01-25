@@ -5,17 +5,20 @@ from transformers import GPT2Tokenizer, GPT2LMHeadModel
 from easyeditor import ROMEHyperParams, BaseEditor
 import torch
 import json
+import random
+import numpy as np
 
 logger = setup_logger()
 
-EXAMPLE_RELATIONS = ["P37"]
-NUM_EDITS_PER_RELATION = 3
+NUM_EDITS_PER_EXECUTION = 100
 
 COUNTERFACT_URL = "https://rome.baulab.info/data/dsets/counterfact.json"
 DATA_DIR = "./data"
 COUNTERFACT_PATH = os.path.join(DATA_DIR, "counterfact.json")
 
 MODEL_PATH = os.path.join("./hugging_cache", "gpt2-xl")
+
+ROME_CACHE_DIR = "./rome_cache"
 
 # Set the device (GPU if available, otherwise CPU)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -61,15 +64,6 @@ hparams = ROMEHyperParams.from_hparams("./hparams/ROME/gpt2-xl.yaml")
 logger.info("Instantiating the editor...")
 editor = BaseEditor.from_hparams(hparams)
 
-# Group counterfacts by relation (category)
-cf_per_relation = {}
-
-for x in counterfact:
-    relation = x["requested_rewrite"]["relation_id"]
-    tmp = cf_per_relation.get(relation, [])
-    tmp.append(x)
-    cf_per_relation[relation] = tmp
-
 # Load the tokenizer and model
 logger.info("Loading the tokenizer and base model...")
 tokenizer = GPT2Tokenizer.from_pretrained(MODEL_PATH)
@@ -79,56 +73,45 @@ tokenizer.padding_side = "left"
 # Move the model to the selected device
 model = GPT2LMHeadModel.from_pretrained(MODEL_PATH).to(device)
 
-for relation in EXAMPLE_RELATIONS:
-    for cf in cf_per_relation[relation][:NUM_EDITS_PER_RELATION]:
-        subjects = [cf["requested_rewrite"]["subject"]]
-        prompts = [
-            cf["requested_rewrite"]["prompt"].format(cf["requested_rewrite"]["subject"])
-        ]
-        gt = [cf["requested_rewrite"]["target_true"]["str"]]
-        tn = [cf["requested_rewrite"]["target_new"]["str"]]
+with open("used_case_ids.json", "r") as f:
+    used_case_ids = json.load(f)
 
-        logger.info(f"Editing model for: {prompts[0]}... {gt[0]} -> {tn[0]}...")
-        metrics, edited_model, _ = editor.edit(
-            prompts=prompts,
-            ground_truth=gt,
-            target_new=tn,
-            subject=subjects,
-            sequential_edit=True,
-        )
+counterfact_len = len(counterfact)
 
-        # Tokenize the prompts
-        batch = tokenizer(prompts, return_tensors="pt", padding=True)
+# Create ROME cache if it doesn't exist
+os.makedirs(ROME_CACHE_DIR, exist_ok=True)
+logger.info(f"Ensured directory exists: {ROME_CACHE_DIR}")
 
-        # Move input tensors to the selected device
-        input_ids = batch["input_ids"].to(device)
-        attention_mask = batch["attention_mask"].to(device)
+for _ in range(NUM_EDITS_PER_EXECUTION):
+    # Find case id (fact) that has not been used for editing before
+    random_case_id = random.randint(0, counterfact_len - 1)
+    while used_case_ids.get(random_case_id) == True:
+        random_case_id = random.randint(0, counterfact_len - 1)
 
-        # Generate pre-edit outputs
-        logger.info("Generating pre-edit outputs...")
-        pre_edit_outputs = model.generate(
-            input_ids=input_ids,
-            attention_mask=attention_mask,
-            max_new_tokens=15,
-        )
+    used_case_ids[random_case_id] = True
 
-        # Generate post-edit outputs
-        logger.info("Generating post-edit outputs...")
-        post_edit_outputs = edited_model.generate(
-            input_ids=input_ids,
-            attention_mask=attention_mask,
-            max_new_tokens=15,
-        )
+    cf = counterfact[random_case_id]
 
-        # Decode and print results
-        max_length = batch["input_ids"].shape[-1]
-        for i in range(len(prompts)):
-            logger.info(f"Prompt: {prompts[i]}")
-            logger.info(
-                f"Pre-Edit Output: {tokenizer.decode(pre_edit_outputs[i][max_length:], skip_special_tokens=True)}"
-            )
-            logger.info(
-                f"Post-Edit Output: {tokenizer.decode(post_edit_outputs[i][max_length:], skip_special_tokens=True)}"
-            )
-            logger.info("--" * 50)
+    subjects = [cf["requested_rewrite"]["subject"]]
+    prompts = [
+        cf["requested_rewrite"]["prompt"].format(cf["requested_rewrite"]["subject"])
+    ]
+    gt = [cf["requested_rewrite"]["target_true"]["str"]]
+    tn = [cf["requested_rewrite"]["target_new"]["str"]]
 
+    logger.info(f"Editing model for: {prompts[0]}... {gt[0]} -> {tn[0]}...")
+    metrics, edited_model, _ = editor.edit(
+        prompts=prompts,
+        ground_truth=gt,
+        target_new=tn,
+        subject=subjects,
+        sequential_edit=True,
+    )
+
+    params_e = edited_model.transformer.h[17].mlp.c_proj.weight.detach().cpu().numpy()
+    params_e = params_e.astype(np.float32)
+
+    np.savez_compressed(f'{ROME_CACHE_DIR}/{random_case_id}.npz', arr=params_e)
+
+with open("used_case_ids.json", "w") as f:
+    json.dump(used_case_ids, f)
