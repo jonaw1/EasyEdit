@@ -10,7 +10,7 @@ import numpy as np
 
 logger = setup_logger()
 
-NUM_EDITS_PER_EXECUTION = 100
+NUM_EDITS_PER_EXECUTION = 50
 
 COUNTERFACT_URL = "https://rome.baulab.info/data/dsets/counterfact.json"
 DATA_DIR = "./data"
