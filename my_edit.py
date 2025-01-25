@@ -101,7 +101,7 @@ max_length = batch["input_ids"].shape[-1]
 for i in range(len(correct_prompts)):
     logger.info(f"Prompt: {correct_prompts[i]}")
     logger.info(
-        f"Pre-Edit  Output: {tokenizer.decode(pre_edit_outputs[i][max_length:], skip_special_tokens=True)}"
+        f"Pre-Edit Output: {tokenizer.decode(pre_edit_outputs[i][max_length:], skip_special_tokens=True)}"
     )
     logger.info(
         f"Post-Edit Output: {tokenizer.decode(post_edit_outputs[i][max_length:], skip_special_tokens=True)}"
