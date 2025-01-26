@@ -72,8 +72,10 @@ for j, id in enumerate(used_case_ids):
     target_new = cf["requested_rewrite"]["target_new"]["str"]
 
     batch = tokenizer(paraphrase_prompts, return_tensors="pt", padding=True)
-    
-    logger.info(f"({j + 1}/{num_ids}) Analyzing counterfact with case id {id}... {ground_truth} -> {target_new}...")
+
+    logger.info(
+        f"({j + 1}/{num_ids}) Analyzing counterfact with case id {id}... {ground_truth} -> {target_new}..."
+    )
 
     # Updating edited model
     edited_weights_path = os.path.join("rome_cache", f"{id}.npz")
@@ -109,20 +111,22 @@ for j, id in enumerate(used_case_ids):
     max_length = batch["input_ids"].shape[-1]
     successful = True
     for i in range(len(paraphrase_prompts)):
-        print(f"Paraphrase prompt: {paraphrase_prompts[i]}")
-        print(
+        logger.info(f"Paraphrase prompt: {paraphrase_prompts[i]}")
+        logger.info(
             f"Pre-Edit Output: {tokenizer.decode( pre_edit_outputs[i][max_length:], skip_special_tokens=True)}"
         )
         post_edit_output = tokenizer.decode(
             post_edit_outputs[i][max_length:], skip_special_tokens=True
         )
-        print(f"Post-Edit Output: {post_edit_output}")
+        logger.info(f"Post-Edit Output: {post_edit_output}")
         if target_new not in post_edit_output:
-            logger.info(f"{target_new} not in output, discarding counterfact with case id {id}...")
+            logger.info(
+                f"{target_new} not in output, discarding counterfact with case id {id}..."
+            )
             successful = False
             unsuccessful_edit_ids.append(id)
             break
-        print("--" * 50)
+        logger.info("--" * 50)
 
     if successful:
         successful_edit_ids.append(id)
