@@ -10,7 +10,7 @@ import numpy as np
 
 logger = setup_logger()
 
-NUM_EDITS_PER_EXECUTION = 160
+NUM_EDITS_PER_EXECUTION = 5
 
 COUNTERFACT_URL = "https://rome.baulab.info/data/dsets/counterfact.json"
 DATA_DIR = "./data"
@@ -121,5 +121,6 @@ for i in range(NUM_EDITS_PER_EXECUTION):
     np.savez_compressed(f"{ROME_CACHE_DIR}/{random_case_id}.npz", arr=params_e)
 
 with open("used_case_ids.json", "w") as f:
-    json.dump(used_case_ids, f)
-logger.info(f"Finished. There are now {len(used_case_ids.keys())} facts used")
+    json_string = json.dumps(used_case_ids, f)
+    f.write(json_string)
+logger.info(f"Finished. There are now {len(used_case_ids)} facts used")
