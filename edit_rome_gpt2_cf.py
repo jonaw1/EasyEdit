@@ -92,7 +92,7 @@ logger.info(f"Ensured directory exists: {ROME_CACHE_DIR}")
 for i in range(NUM_EDITS_PER_EXECUTION):
     # Find case id (fact) that has not been used for editing before
     random_case_id = random.randint(0, counterfact_len - 1)
-    while random_case_id not in used_case_ids:
+    while random_case_id in used_case_ids:
         random_case_id = random.randint(0, counterfact_len - 1)
 
     used_case_ids.append(random_case_id)
