@@ -63,6 +63,16 @@ successful_edit_ids = []
 unsuccessful_edit_ids = []
 
 for j, id in enumerate(used_case_ids):
+    cf = counterfact[id]
+    original_prompt = cf["requested_rewrite"]["prompt"].format(
+        cf["requested_rewrite"]["subject"]
+    )
+    paraphrase_prompts = cf["paraphrase_prompts"]
+    ground_truth = cf["requested_rewrite"]["target_true"]["str"]
+    target_new = cf["requested_rewrite"]["target_new"]["str"]
+
+    batch = tokenizer(paraphrase_prompts, return_tensors="pt", padding=True)
+    
     logger.info(f"({j + 1}/{num_ids}) Analyzing counterfact with case id {id}... {ground_truth} -> {target_new}...")
 
     # Updating edited model
@@ -79,16 +89,6 @@ for j, id in enumerate(used_case_ids):
         edited_model.transformer.h[17].mlp.c_proj.weight.copy_(params_e_tensor)
 
     logger.info("Edited weights successfully loaded and assigned to the edited model.")
-
-    cf = counterfact[id]
-    original_prompt = cf["requested_rewrite"]["prompt"].format(
-        cf["requested_rewrite"]["subject"]
-    )
-    paraphrase_prompts = cf["paraphrase_prompts"]
-    ground_truth = cf["requested_rewrite"]["target_true"]["str"]
-    target_new = cf["requested_rewrite"]["target_new"]["str"]
-
-    batch = batch = tokenizer(paraphrase_prompts, return_tensors="pt", padding=True)
 
     # Generate pre-edit outputs
     logger.info("Generating pre-edit outputs...")
