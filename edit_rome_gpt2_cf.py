@@ -123,4 +123,7 @@ for i in range(NUM_EDITS_PER_EXECUTION):
 with open("used_case_ids.json", "w") as f:
     json_string = json.dumps(used_case_ids)
     f.write(json_string)
-logger.info(f"Finished. There are now {len(used_case_ids)} facts used")
+
+with open("used_case_ids.json", "r") as f:
+    read_case_ids = json.load(f)
+logger.info(f"Finished. There are now {len(used_case_ids)} facts in the dictionary and {len(read_case_ids)} in the file!")
