@@ -13,3 +13,4 @@ scripts
 app.log
 **/.DS_Store
 rome_cache
+used_case_ids.json

@@ -76,7 +76,7 @@ model = GPT2LMHeadModel.from_pretrained(MODEL_PATH).to(device)
 if os.path.exists("used_case_ids.json"):
     with open("used_case_ids.json", "r") as f:
         used_case_ids = json.load(f)
-    logger.info("Loaded used_case_ids from used_case_ids.json.")
+    logger.info(f"Loaded {len(used_case_ids)} used_case_ids from used_case_ids.json.")
 else:
     used_case_ids = {}
     logger.info("used_case_ids.json not found. Initializing an empty dictionary.")
