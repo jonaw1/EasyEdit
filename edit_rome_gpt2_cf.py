@@ -20,6 +20,8 @@ MODEL_PATH = os.path.join("./hugging_cache", "gpt2-xl")
 
 ROME_CACHE_DIR = "./rome_cache"
 
+USED_IDS_FILE_NAME = "used_case_ids.json"
+
 # Set the device (GPU if available, otherwise CPU)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 logger.info(f"Using device: {device}")
@@ -73,13 +75,13 @@ tokenizer.padding_side = "left"
 # Move the model to the selected device
 model = GPT2LMHeadModel.from_pretrained(MODEL_PATH).to(device)
 
-if os.path.exists("used_case_ids.json"):
-    with open("used_case_ids.json", "r") as f:
-        used_case_ids = json.load(f)
-    logger.info(f"Loaded {len(used_case_ids)} used_case_ids from used_case_ids.json.")
+if os.path.exists(USED_IDS_FILE_NAME):
+    with open(USED_IDS_FILE_NAME, "r") as f:
+        used_case_ids: list[int] = json.load(f)
+    logger.info(f"Loaded {len(used_case_ids)} used_case_ids from {USED_IDS_FILE_NAME}.")
 else:
-    used_case_ids = {}
-    logger.info("used_case_ids.json not found. Initializing an empty dictionary.")
+    used_case_ids: list[int] = []
+    logger.info(f"{USED_IDS_FILE_NAME} not found. Initializing an empty list.")
 
 counterfact_len = len(counterfact)
 
@@ -90,10 +92,10 @@ logger.info(f"Ensured directory exists: {ROME_CACHE_DIR}")
 for i in range(NUM_EDITS_PER_EXECUTION):
     # Find case id (fact) that has not been used for editing before
     random_case_id = random.randint(0, counterfact_len - 1)
-    while used_case_ids.get(random_case_id) == True:
+    while random_case_id not in used_case_ids:
         random_case_id = random.randint(0, counterfact_len - 1)
 
-    used_case_ids[random_case_id] = True
+    used_case_ids.append(random_case_id)
 
     cf = counterfact[random_case_id]
 
@@ -120,6 +122,12 @@ for i in range(NUM_EDITS_PER_EXECUTION):
 
     np.savez_compressed(f"{ROME_CACHE_DIR}/{random_case_id}.npz", arr=params_e)
 
-with open("used_case_ids.json", "w") as f:
+with open(USED_IDS_FILE_NAME, "w") as f:
     json.dump(used_case_ids, f)
-logger.info(f"Finished. There are now {len(used_case_ids)} facts used")
+
+with open(USED_IDS_FILE_NAME, "r") as f:
+    used_case_ids_loaded: list[int] = json.load(f)
+
+logger.info(
+    f"Finished. There are now {len(used_case_ids)} ids in the list in memory and {len(used_case_ids_loaded)} in the file"
+)
