@@ -120,10 +120,15 @@ for i in range(NUM_EDITS_PER_EXECUTION):
 
     np.savez_compressed(f"{ROME_CACHE_DIR}/{random_case_id}.npz", arr=params_e)
 
+if os.path.exists("used_case_ids.json"):
+    os.remove("used_case_ids.json")
+
 with open("used_case_ids.json", "w") as f:
     json_string = json.dumps(used_case_ids)
     f.write(json_string)
 
 with open("used_case_ids.json", "r") as f:
     read_case_ids = json.load(f)
-logger.info(f"Finished. There are now {len(used_case_ids)} facts in the dictionary and {len(read_case_ids)} in the file!")
+logger.info(
+    f"Finished. There are now {len(used_case_ids)} facts in the dictionary and {len(read_case_ids)} in the file!"
+)
