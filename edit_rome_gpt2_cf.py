@@ -121,6 +121,6 @@ for i in range(NUM_EDITS_PER_EXECUTION):
     np.savez_compressed(f"{ROME_CACHE_DIR}/{random_case_id}.npz", arr=params_e)
 
 with open("used_case_ids.json", "w") as f:
-    json_string = json.dumps(used_case_ids, f)
+    json_string = json.dumps(used_case_ids)
     f.write(json_string)
 logger.info(f"Finished. There are now {len(used_case_ids)} facts used")
